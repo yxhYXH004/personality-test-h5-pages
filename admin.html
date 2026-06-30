@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台 - 深度人格测试</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: #F8FAFC;
+            color: #1E293B;
+            font-size: 14px;
+        }
+        button { font-family: inherit; }
+
+        /* 登录页 */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .login-box {
+            background: #FFFFFF;
+            padding: 40px 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            width: 100%;
+            max-width: 360px;
+        }
+        .login-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; text-align: center; }
+        .login-subtitle { font-size: 13px; color: #64748B; text-align: center; margin-bottom: 28px; }
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 13px; color: #64748B; margin-bottom: 6px; }
+        .form-input {
+            width: 100%; height: 40px; padding: 0 14px;
+            border: 1px solid #E2E8F0; border-radius: 8px;
+            font-size: 14px; outline: none; transition: border-color 0.15s;
+        }
+        .form-input:focus { border-color: #3B82F6; }
+        .btn {
+            width: 100%; height: 40px; color: #fff; border: none; border-radius: 8px;
+            font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.15s;
+        }
+        .btn-primary { background: #007AFF; }
+        .btn-primary:hover { background: #0064D2; }
+        .btn-primary:active { background: #0050A0; }
+        .btn:disabled { background: #94A3B8; cursor: not-allowed; }
+        .btn-sm { width: auto; height: 28px; padding: 0 12px; font-size: 12px; border-radius: 6px; }
+        .btn-secondary { background: #F1F5F9; color: #1E293B; }
+        .btn-secondary:hover { background: #E2E8F0; }
+        .btn-danger { background: #EF4444; }
+        .btn-danger:hover { background: #DC2626; }
+        .btn-success { background: #10B981; }
+        .btn-success:hover { background: #059669; }
+
+        /* 后台框架 */
+        .admin-layout { display: flex; min-height: 100vh; }
+        .admin-sidebar {
+            width: 200px; background: #1E293B; color: #E2E8F0;
+            flex-shrink: 0; padding: 20px 0;
+        }
+        .admin-logo {
+            padding: 0 20px 20px; font-size: 16px; font-weight: 600;
+            border-bottom: 1px solid #334155;
+        }
+        .menu-item {
+            padding: 12px 20px; cursor: pointer; font-size: 14px;
+            border-left: 3px solid transparent; transition: all 0.15s;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .menu-item:hover { background: #334155; }
+        .menu-item.active {
+            background: #334155; border-left-color: #007AFF; color: #fff;
+        }
+        .menu-item svg { width: 16px; height: 16px; }
+        .admin-main { flex: 1; padding: 24px; overflow-x: auto; }
+        .page-section { display: none; }
+        .page-section.active { display: block; }
+        .page-title {
+            font-size: 20px; font-weight: 600; margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* 仪表盘 */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px; margin-bottom: 24px;
+        }
+        .stat-card {
+            background: #fff; padding: 20px; border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .stat-label { font-size: 13px; color: #64748B; margin-bottom: 8px; }
+        .stat-value { font-size: 24px; font-weight: 600; color: #1E293B; }
+        .stat-value.purple { color: #7C3AED; }
+        .stat-value.green { color: #10B981; }
+        .stat-sub { font-size: 12px; color: #94A3B8; margin-top: 4px; }
+
+        .card {
+            background: #fff; border-radius: 10px; padding: 20px; margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .card-title { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
+
+        /* 列表 */
+        .toolbar {
+            display: flex; gap: 10px; margin-bottom: 16px; align-items: center;
+        }
+        .toolbar .form-input { width: 240px; height: 36px; }
+        .toolbar select {
+            height: 36px; padding: 0 12px; border: 1px solid #E2E8F0;
+            border-radius: 8px; background: #fff; font-size: 14px; outline: none;
+        }
+        .data-table {
+            width: 100%; background: #fff; border-radius: 10px; overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); border-collapse: collapse;
+        }
+        .data-table th {
+            background: #F8FAFC; padding: 12px 16px; text-align: left;
+            font-size: 13px; font-weight: 600; color: #475569;
+            border-bottom: 1px solid #E2E8F0;
+        }
+        .data-table td {
+            padding: 12px 16px; border-bottom: 1px solid #F1F5F9;
+            font-size: 13px; color: #334155;
+        }
+        .data-table tr:hover td { background: #F8FAFC; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .empty-state {
+            text-align: center; padding: 40px 20px; color: #94A3B8;
+        }
+
+        /* 状态标签 */
+        .status-tag {
+            display: inline-block; padding: 2px 8px; font-size: 12px;
+            border-radius: 4px; font-weight: 500;
+        }
+        .status-tag.paid { background: #D1FAE5; color: #059669; }
+        .status-tag.pending { background: #FEF3C7; color: #D97706; }
+        .status-tag.expired { background: #FEE2E2; color: #DC2626; }
+        .status-tag.unpaid { background: #F1F5F9; color: #64748B; }
+
+        /* 分页 */
+        .pagination {
+            display: flex; justify-content: center; align-items: center;
+            gap: 8px; margin-top: 16px;
+        }
+        .pagination button {
+            padding: 6px 12px; border: 1px solid #E2E8F0; background: #fff;
+            border-radius: 6px; cursor: pointer; font-size: 13px;
+        }
+        .pagination button:hover:not(:disabled) { background: #F1F5F9; }
+        .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .pagination button.active { background: #007AFF; color: #fff; border-color: #007AFF; }
+
+        /* 上传区 */
+        .upload-zone {
+            border: 2px dashed #CBD5E1; border-radius: 8px; padding: 40px 20px;
+            text-align: center; cursor: pointer; transition: all 0.15s;
+        }
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: #007AFF; background: #F0F9FF;
+        }
+        .upload-icon { font-size: 32px; margin-bottom: 12px; }
+        .upload-hint { color: #64748B; font-size: 13px; }
+        .upload-format { color: #94A3B8; font-size: 12px; margin-top: 4px; }
+
+        /* 模态框 */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.5); z-index: 100;
+            align-items: center; justify-content: center; padding: 20px;
+        }
+        .modal.show { display: flex; }
+        .modal-content {
+            background: #FFFFFF; border-radius: 12px; padding: 24px;
+            max-width: 700px; width: 100%; max-height: 85vh; overflow-y: auto;
+        }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 16px;
+        }
+        .modal-title { font-size: 16px; font-weight: 600; }
+        .modal-close {
+            cursor: pointer; font-size: 24px; color: #94A3B8;
+            background: none; border: none; padding: 0; line-height: 1;
+        }
+        .detail-row {
+            display: flex; padding: 8px 0; border-bottom: 1px solid #F1F5F9;
+        }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { width: 100px; color: #64748B; flex-shrink: 0; }
+        .detail-value { flex: 1; word-break: break-all; }
+        pre {
+            background: #F1F5F9; padding: 12px; border-radius: 6px;
+            font-size: 12px; overflow-x: auto; white-space: pre-wrap;
+            max-height: 400px; overflow-y: auto;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed; top: 24px; right: 24px; padding: 12px 20px;
+            background: #1E293B; color: #fff; border-radius: 8px;
+            font-size: 14px; z-index: 200; animation: slideIn 0.25s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* 简单柱状图 */
+        .chart-bar {
+            display: flex; align-items: flex-end; gap: 8px; height: 160px;
+            padding: 12px 0;
+        }
+        .chart-bar-item {
+            flex: 1; display: flex; flex-direction: column; align-items: center;
+        }
+        .chart-bar-fill {
+            width: 100%; background: linear-gradient(180deg, #60A5FA 0%, #007AFF 100%);
+            border-radius: 4px 4px 0 0; min-height: 4px; position: relative;
+        }
+        .chart-bar-label { font-size: 11px; color: #64748B; margin-top: 4px; }
+        .chart-bar-value { font-size: 11px; color: #1E293B; font-weight: 500; margin-bottom: 4px; }
+
+        .avatar {
+            width: 32px; height: 32px; border-radius: 50%; background: #E2E8F0;
+            display: inline-block; vertical-align: middle; margin-right: 8px;
+            object-fit: cover;
+        }
+        .text-success { color: #10B981; font-weight: 500; }
+        .text-danger { color: #EF4444; font-weight: 500; }
+        .text-muted { color: #94A3B8; }
+
+        @media (max-width: 768px) {
+            .admin-layout { flex-direction: column; }
+            .admin-sidebar { width: 100%; }
+            .data-table { font-size: 12px; }
+            .data-table th, .data-table td { padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 登录页 -->
+    <div id="login-page" class="login-container">
+        <div class="login-box">
+            <h1 class="login-title">管理后台</h1>
+            <p class="login-subtitle">深度人格测试系统</p>
+            <form id="login-form" onsubmit="return handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">用户名</label>
+                    <input type="text" id="username" class="form-input" placeholder="请输入用户名" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">密码</label>
+                    <input type="password" id="password" class="form-input" placeholder="请输入密码" required>
+                </div>
+                <button type="submit" class="btn btn-primary" id="login-btn">登录</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 后台主页 -->
+    <div id="admin-page" style="display: none;">
+        <div class="admin-layout">
+            <!-- 侧边栏 -->
+            <div class="admin-sidebar">
+                <div class="admin-logo">📊 深度人格后台</div>
+                <div class="menu-item active" data-page="dashboard" onclick="switchPage('dashboard')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    仪表盘
+                </div>
+                <div class="menu-item" data-page="tests" onclick="switchPage('tests')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    题库管理
+                </div>
+                <div class="menu-item" data-page="users" onclick="switchPage('users')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    用户列表
+                </div>
+                <div class="menu-item" data-page="orders" onclick="switchPage('orders')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    订单流水
+                </div>
+                <div class="menu-item" data-page="results" onclick="switchPage('results')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    报告台账
+                </div>
+                <div style="position: absolute; bottom: 20px; left: 0; right: 0; padding: 0 20px;">
+                    <div style="font-size: 12px; color: #94A3B8; margin-bottom: 8px;" id="admin-username-text">admin</div>
+                    <button class="btn btn-secondary btn-sm" style="width: 100%;" onclick="logout()">退出登录</button>
+                </div>
+            </div>
+
+            <!-- 主内容区 -->
+            <div class="admin-main">
+                <!-- 仪表盘 -->
+                <div id="page-dashboard" class="page-section active">
+                    <div class="page-title">仪表盘</div>
+                    <div class="stats-grid" id="stats-grid"></div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="card">
+                            <div class="card-title">最近 7 天营收</div>
+                            <div class="chart-bar" id="revenue-chart"></div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">各测试转化数据</div>
+                            <div id="test-performance"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 题库管理 -->
+                <div id="page-tests" class="page-section">
+                    <div class="page-title">题库管理</div>
+                    <div class="card">
+                        <div class="card-title">上传新题库</div>
+                        <div class="upload-zone" id="upload-zone">
+                            <div class="upload-icon">📁</div>
+                            <div class="upload-hint">点击或拖放 JSON 文件到此处</div>
+                            <div class="upload-format">支持多个 .json 文件</div>
+                            <input type="file" id="file-input" accept=".json" multiple style="display: none;">
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">测试列表</div>
+                        <div id="test-list"></div>
+                    </div>
+                </div>
+
+                <!-- 用户列表 -->
+                <div id="page-users" class="page-section">
+                    <div class="page-title">用户列表</div>
+                    <div class="card">
+                        <div class="toolbar">
+                            <input type="text" class="form-input" id="user-keyword" placeholder="搜索用户昵称/OpenID">
+                            <button class="btn btn-primary btn-sm" onclick="loadUsers(1)">搜索</button>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>用户</th>
+                                    <th>OpenID</th>
+                                    <th>报告数</th>
+                                    <th>付费次数</th>
+                                    <th>注册时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-tbody"></tbody>
+                        </table>
+                        <div class="pagination" id="users-pagination"></div>
+                    </div>
+                </div>
+
+                <!-- 订单流水 -->
+                <div id="page-orders" class="page-section">
+                    <div class="page-title">订单流水</div>
+                    <div class="card">
+                        <div class="toolbar">
+                            <select id="order-status">
+                                <option value="">全部状态</option>
+                                <option value="0">待支付</option>
+                                <option value="1">已支付</option>
+                                <option value="2">已过期</option>
+                            </select>
+                            <input type="text" class="form-input" id="order-keyword" placeholder="搜索订单号/用户">
+                            <button class="btn btn-primary btn-sm" onclick="loadOrders(1)">搜索</button>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>订单号</th>
+                                    <th>用户</th>
+                                    <th>金额</th>
+                                    <th>状态</th>
+                                    <th>下单时间</th>
+                                    <th>支付时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-tbody"></tbody>
+                        </table>
+                        <div class="pagination" id="orders-pagination"></div>
+                    </div>
+                </div>
+
+                <!-- 报告台账 -->
+                <div id="page-results" class="page-section">
+                    <div class="page-title">报告台账</div>
+                    <div class="card">
+                        <div class="toolbar">
+                            <select id="result-paid">
+                                <option value="">全部状态</option>
+                                <option value="0">未付费</option>
+                                <option value="1">已付费</option>
+                            </select>
+                            <input type="text" class="form-input" id="result-keyword" placeholder="搜索结果类型/用户">
+                            <button class="btn btn-primary btn-sm" onclick="loadResults(1)">搜索</button>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>报告ID</th>
+                                    <th>用户</th>
+                                    <th>测试</th>
+                                    <th>结果类型</th>
+                                    <th>状态</th>
+                                    <th>创建时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="results-tbody"></tbody>
+                        </table>
+                        <div class="pagination" id="results-pagination"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 详情弹窗 -->
+    <div id="detail-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="detail-title">详情</div>
+                <button class="modal-close" onclick="closeModal('detail-modal')">×</button>
+            </div>
+            <div id="detail-content"></div>
+        </div>
+    </div>
+
+    <!-- 预览弹窗 -->
+    <div id="preview-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">测试预览</div>
+                <button class="modal-close" onclick="closeModal('preview-modal')">×</button>
+            </div>
+            <pre id="preview-content"></pre>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 全局状态 ====================
+        let adminToken = localStorage.getItem('admin_token') || '';
+        let tests = [];
+        let usersPage = 1;
+        let ordersPage = 1;
+        let resultsPage = 1;
+        let usersPageSize = 20;
+        let ordersPageSize = 20;
+        let resultsPageSize = 20;
+        let usersTotal = 0;
+        let ordersTotal = 0;
+        let resultsTotal = 0;
+        const IS_STATIC_DEMO = location.hostname.endsWith('github.io') || location.protocol === 'file:';
+        const STATIC_TEST_FILES = [
+            '06-existentialist.json',
+            '07-freud.json',
+            '08-four-layers.json',
+            '09-wang-yangming.json'
+        ];
+        let staticTestsCache = null;
+
+        // ==================== 工具函数 ====================
+        function showToast(message, duration = 2000) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), duration);
+        }
+
+        function showModal(id) {
+            document.getElementById(id).classList.add('show');
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('show');
+        }
+
+        function getApiBase() {
+            return window.location.origin;
+        }
+
+        async function loadStaticTests() {
+            if (staticTestsCache) return staticTestsCache;
+            const loaded = await Promise.all(STATIC_TEST_FILES.map(async file => {
+                const res = await fetch(`tests-json/${file}`);
+                if (!res.ok) throw new Error('题库加载失败：' + file);
+                return await res.json();
+            }));
+            staticTestsCache = loaded.map(test => ({
+                ...test,
+                status: 1,
+                questionCount: test.questionCount || test.questions.length,
+                createdAt: '-'
+            }));
+            return staticTestsCache;
+        }
+
+        async function getStaticDashboardData() {
+            const loadedTests = await loadStaticTests();
+            return {
+                summary: {
+                    totalUsers: 0,
+                    totalResults: 0,
+                    paidOrders: 0,
+                    totalOrders: 0,
+                    revenue: 0,
+                    conversionRate: 0,
+                    totalTests: loadedTests.length
+                },
+                dailyStats: [],
+                testPerformance: loadedTests.map(test => ({
+                    name: test.name,
+                    resultCount: 0,
+                    paidCount: 0
+                }))
+            };
+        }
+
+        function showStaticUnavailable() {
+            showToast('GitHub Pages 静态版只能预览题库，增删改和用户订单需要 Node 后端');
+        }
+
+        function escapeHtml(text) {
+            if (text == null) return '';
+            const div = document.createElement('div');
+            div.textContent = String(text);
+            return div.innerHTML;
+        }
+
+        function formatDate(str) {
+            if (!str) return '-';
+            return str.substring(0, 16).replace('T', ' ');
+        }
+
+        function statusText(s) {
+            return ['待支付', '已支付', '已过期'][s] || '-';
+        }
+
+        function statusClass(s) {
+            return ['pending', 'paid', 'expired'][s] || '';
+        }
+
+        // ==================== 页面切换 ====================
+        function switchPage(name) {
+            document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-' + name).classList.add('active');
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            document.querySelector(`.menu-item[data-page="${name}"]`).classList.add('active');
+
+            // 切换时加载对应数据
+            if (name === 'dashboard') loadDashboard();
+            else if (name === 'tests') loadTests();
+            else if (name === 'users') loadUsers(1);
+            else if (name === 'orders') loadOrders(1);
+            else if (name === 'results') loadResults(1);
+        }
+
+        // ==================== 登录 ====================
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('login-btn');
+            btn.disabled = true;
+            btn.textContent = '登录中...';
+            if (IS_STATIC_DEMO) {
+                if (username === 'admin' && password === 'admin123') {
+                    adminToken = 'static-admin';
+                    localStorage.setItem('admin_token', adminToken);
+                    document.getElementById('admin-username-text').textContent = username;
+                    showAdminPage();
+                    showToast('已进入 GitHub Pages 静态预览');
+                } else {
+                    showToast('静态预览账号：admin / admin123');
+                }
+                btn.disabled = false;
+                btn.textContent = '登录';
+                return false;
+            }
+            try {
+                const res = await fetch(getApiBase() + '/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    adminToken = data.token;
+                    localStorage.setItem('admin_token', adminToken);
+                    document.getElementById('admin-username-text').textContent = username;
+                    showAdminPage();
+                    showToast('登录成功');
+                } else {
+                    showToast(data.message || '登录失败');
+                }
+            } catch (e) {
+                showToast('网络错误');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '登录';
+            }
+            return false;
+        }
+
+        function logout() {
+            localStorage.removeItem('admin_token');
+            adminToken = '';
+            showLoginPage();
+        }
+
+        function showLoginPage() {
+            document.getElementById('login-page').style.display = 'flex';
+            document.getElementById('admin-page').style.display = 'none';
+        }
+
+        function showAdminPage() {
+            document.getElementById('login-page').style.display = 'none';
+            document.getElementById('admin-page').style.display = 'block';
+            switchPage('dashboard');
+        }
+
+        // ==================== 仪表盘 ====================
+        async function loadDashboard() {
+            try {
+                if (IS_STATIC_DEMO) {
+                    renderDashboard(await getStaticDashboardData());
+                    return;
+                }
+                const res = await fetch(getApiBase() + '/api/admin/dashboard', {
+                    headers: { 'X-Admin-Token': adminToken }
+                });
+                if (res.status === 401) { logout(); return; }
+                const data = await res.json();
+                renderDashboard(data);
+            } catch (e) {
+                showToast('加载失败');
+            }
+        }
+
+        function renderDashboard(data) {
+            const s = data.summary;
+            document.getElementById('stats-grid').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-label">总用户数</div>
+                    <div class="stat-value">${s.totalUsers}</div>
+                    <div class="stat-sub">注册用户总数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">总报告数</div>
+                    <div class="stat-value">${s.totalResults}</div>
+                    <div class="stat-sub">完成的测试</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">付费订单</div>
+                    <div class="stat-value green">${s.paidOrders}</div>
+                    <div class="stat-sub">/ 共 ${s.totalOrders} 单</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">总营收</div>
+                    <div class="stat-value purple">¥${s.revenue.toFixed(2)}</div>
+                    <div class="stat-sub">已支付订单</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">付费转化率</div>
+                    <div class="stat-value">${s.conversionRate}%</div>
+                    <div class="stat-sub">付费 / 报告</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">在线测试</div>
+                    <div class="stat-value">${s.totalTests}</div>
+                    <div class="stat-sub">已上架测试数</div>
+                </div>
+            `;
+
+            // 营收图表
+            const days = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                days.push(d.toISOString().substring(5, 10));
+            }
+            const dayMap = {};
+            data.dailyStats.forEach(d => {
+                const key = (d.date || '').substring(5);
+                dayMap[key] = d.dailyRevenue || 0;
+            });
+            const maxRevenue = Math.max(...Object.values(dayMap), 1);
+            document.getElementById('revenue-chart').innerHTML = days.map(d => {
+                const val = dayMap[d] || 0;
+                const height = (val / maxRevenue) * 130;
+                return `
+                    <div class="chart-bar-item">
+                        <div class="chart-bar-value">¥${val.toFixed(0)}</div>
+                        <div class="chart-bar-fill" style="height: ${height}px;"></div>
+                        <div class="chart-bar-label">${d}</div>
+                    </div>
+                `;
+            }).join('');
+
+            // 测试表现
+            const tpHtml = data.testPerformance.map(t => {
+                const conversion = t.resultCount > 0 ? (t.paidCount / t.resultCount * 100).toFixed(0) : 0;
+                return `
+                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #F1F5F9;">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 500;">${escapeHtml(t.name)}</div>
+                            <div style="font-size: 12px; color: #94A3B8;">${t.resultCount} 报告 · ${t.paidCount} 付费</div>
+                        </div>
+                        <div style="font-weight: 600; color: #7C3AED;">${conversion}%</div>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('test-performance').innerHTML = tpHtml || '<div class="empty-state">暂无数据</div>';
+        }
+
+        // ==================== 题库管理 ====================
+        async function loadTests() {
+            try {
+                if (IS_STATIC_DEMO) {
+                    tests = await loadStaticTests();
+                    renderTestList();
+                    return;
+                }
+                const res = await fetch(getApiBase() + '/api/admin/tests', {
+                    headers: { 'X-Admin-Token': adminToken }
+                });
+                if (res.status === 401) { logout(); return; }
+                tests = await res.json();
+                renderTestList();
+            } catch (e) {
+                showToast('加载失败');
+            }
+        }
+
+        function renderTestList() {
+            const container = document.getElementById('test-list');
+            if (tests.length === 0) {
+                container.innerHTML = '<div class="empty-state">暂无测试，请上传题库</div>';
+                return;
+            }
+            container.innerHTML = `<table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>名称</th>
+                        <th>题目数</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tests.map(test => `
+                        <tr>
+                            <td><code>${escapeHtml(test.id)}</code></td>
+                            <td>${escapeHtml(test.name)}</td>
+                            <td>${test.questionCount}</td>
+                            <td><span class="status-tag ${test.status === 1 ? 'paid' : 'unpaid'}">${test.status === 1 ? '已上线' : '已下线'}</span></td>
+                            <td>
+                                <button class="btn btn-secondary btn-sm" onclick="previewTest('${test.id}')">预览</button>
+                                <button class="btn btn-secondary btn-sm" onclick="toggleStatus('${test.id}', ${test.status})">${test.status === 1 ? '下线' : '上线'}</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteTest('${test.id}')">删除</button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>`;
+        }
+
+        async function previewTest(testId) {
+            try {
+                if (IS_STATIC_DEMO) {
+                    const loadedTests = await loadStaticTests();
+                    const data = loadedTests.find(test => test.id === testId);
+                    document.getElementById('preview-content').textContent = JSON.stringify(data, null, 2);
+                    showModal('preview-modal');
+                    return;
+                }
+                const res = await fetch(getApiBase() + '/api/admin/tests/' + testId + '/preview', {
+                    headers: { 'X-Admin-Token': adminToken }
+                });
+                const data = await res.json();
+                document.getElementById('preview-content').textContent = JSON.stringify(data, null, 2);
+                showModal('preview-modal');
+            } catch (e) {
+                showToast('预览失败');
+            }
+        }
+
+        async function toggleStatus(testId, currentStatus) {
+            if (IS_STATIC_DEMO) { showStaticUnavailable(); return; }
+            const newStatus = currentStatus === 1 ? 0 : 1;
+            if (!confirm(`确定要${newStatus === 1 ? '上线' : '下线'}该测试吗？`)) return;
+            try {
+                const res = await fetch(getApiBase() + '/api/admin/tests/' + testId + '/status', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Admin-Token': adminToken },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                if (res.ok) { showToast('操作成功'); loadTests(); }
+                else showToast('操作失败');
+            } catch (e) { showToast('网络错误'); }
+        }
+
+        async function deleteTest(testId) {
+            if (IS_STATIC_DEMO) { showStaticUnavailable(); return; }
+            if (!confirm('确定要删除该测试吗？此操作不可恢复！')) return;
+            try {
+                const res = await fetch(getApiBase() + '/api/admin/tests/' + testId, {
+                    method: 'DELETE',
+                    headers: { 'X-Admin-Token': adminToken }
+                });
+                if (res.ok) { showToast('删除成功'); loadTests(); }
+                else showToast('删除失败');
+            } catch (e) { showToast('网络错误'); }
+        }
+
+        // ==================== 用户列表 ====================
+        async function loadUsers(page) {
+            usersPage = page;
+            if (IS_STATIC_DEMO) {
+                renderUsers({ total: 0, list: [] });
+                showStaticUnavailable();
+                return;
+            }
+            const keyword = document.getElementById('user-keyword').value;
+            try {
+                const res = await fetch(getApiBase() + `/api/admin/users?page=${page}&pageSize=${usersPageSize}&keyword=${encodeURIComponent(keyword)}`, {
+                    headers: { 'X-Admin-Token': adminToken }
+                });
+                if (res.status === 401) { logout(); return; }
+                const data = await res.json();
+                renderUsers(data);
+            } catch (e) {
+                showToast('加载失败');
+            }
+        }
+
+        function renderUsers(data) {
+            usersTotal = data.total;
+            const tbody = document.getElementById('users-tbody');
+            if (data.list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-state">暂无用户</td></tr>';
+            } else {
+                tbody.innerHTML = data.list.map(u => `
+                    <tr>
+                        <td>#${u.id}</td>
+                        <td>${u.avatar ? `<img src="${escapeHtml(u.avatar)}" class="avatar" onerror="this.style.display='none'">` : ''}${escapeHtml(u.nickname || '未命名')}</td>
+                        <td><code style="font-size: 12px;">${escapeHtml((u.openid || '').substring(0, 16))}...</code></td>
+                        <td>${u.resultCount}</td>
+                        <td><span class="text-success">${u.paidCount}</span></td>
+                        <td>${formatDate(u.created_at)}</td>
+                        <td><button class="btn btn-secondary btn-sm" onclick="viewUser(${u.id})">详情</button></td>
+                    </tr>
+                `).join('');
+            }
+            renderPagination('users-pagination', usersTotal, usersPage, usersPageSize, 'loadUsers');
+        }
+
+        async function viewUser(userId) {
+            if (IS_STATIC_DEMO) { showStaticUnavailable(); return; }
+            try {
+                const res = await fetch(getApiBase() + '/api/admin/users/' + userId, {
+                    headers: { 'X-Admin-Token': adminToken }
+                });
+                const data = await res.json();
+                const u = data.user;
+                const resultsHtml = data.results.map(r => `
+                    <div class="detail-row">
+                        <div class="detail-label">报告 #${r.id.substring(0, 8)}</div>
+                        <div class="detail-value">${escapeHtml(r.result_type || '-')} · ${r.is_paid ? '已付费' : '未付费'} · ${formatDate(r.created_at)}</div>
+                    </div>
+                `).join('') || '<div class="text-muted">暂无报告</div>';
+
+                const ordersHtml = data.orders.map(o => `
+                    <div class="detail-row">
+                        <div class="detail-label">${o.id.substring(0, 12)}...</div>
+                        <div class="detail-value">¥${o.amount} · ${statusText(o.status)} · ${formatDate(o.created_at)}</div>
+                    </div>
+                `).join('') || '<div class="text-muted">暂无订单</div>';
+
+                document.getElementById('detail-title').textContent = '用户详情 #' + u.id;
+                document.getElementById('detail-content').innerHTML = `
+                    <div class="detail-row"><div class="detail-label">用户ID</div><div class="detail-value">#${u.id}</div></div>
+                    <div class="detail-row"><div class="detail-label">昵称</div><div class="detail-value">${escapeHtml(u.nickname || '-')}</div></div>
+                    <div class="detail-row"><div class="detail-label">OpenID</div><div class="detail-value"><code>${escapeHtml(u.openid)}</code></div></div>
+                    <div class="detail-row"><div class="detail-label">头像</div><div class="detail-value">${u.avatar ? `<img src="${escapeHtml(u.avatar)}" style="width: 60px; height: 60px; border-radius: 8px;">` : '-'}</div></div>
+                    <div class="detail-row"><div class="detail-label">注册时间</div><div class="detail-value">${formatDate(u.created_at)}</div></div>
+                    <h4 style="margin: 16px 0 8px;">报告列表（${data.results.length}）</h4>
+                    ${resultsHtml}
+                    <h4 style="margin: 16px 0 8px;">订单列表（${data.orders.length}）</h4>
+                    ${ordersHtml}
+                `;
+                showModal('detail-modal');
+            } catch (e) {
+                showToast('加载失败');
+            }
+        }
+
+        // ==================== 订单流水 ====================
+        async function loadOrders(page) {
+            ordersPage = page;
+            if (IS_STATIC_DEMO) {
+                renderOrders({ total: 0, totalRevenue: 0, list: [] });
+                showStaticUnavailable();
+                return;
+            }
+            const status = document.getElementById('order-status').value;
+            const keyword = document.getElementById('order-keyword').value;
+            try {
+                const res = await fetch(getApiBase() + `/api/admin/orders?page=${page}&pageSize=${ordersPageSize}&status=${status}&keyword=${encodeURIComponent(keyword)}`, {
+                    headers: { 'X-Admin-Token': adminToken }
+                });
+                if (res.status === 401) { logout(); return; }
+                const data = await res.json();
+                renderOrders(data);
+            } catch (e) {
+                showToast('加载失败');
+            }
+        }
+
+        function renderOrders(data) {
+            ordersTotal = data.total;
+            const tbody = document.getElementById('orders-tbody');
+            const totalRevenue = data.totalRevenue || 0;
+            if (data.list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-state">暂无订单</td></tr>';
+            } else {
+                tbody.innerHTML = data.list.map(o => `
+                    <tr>
+                        <td><code style="font-size: 12px;">${o.id.substring(0, 16)}...</code></td>
+                        <td>${o.avatar ? `<img src="${escapeHtml(o.avatar)}" class="avatar" onerror="this.style.display='none'">` : ''}${escapeHtml(o.nickname || '用户#' + o.user_id)}</td>
+                        <td><span class="text-success">¥${o.amount.toFixed(2)}</span></td>
+                        <td><span class="status-tag ${statusClass(o.status)}">${statusText(o.status)}</span></td>
+                        <td>${formatDate(o.created_at)}</td>
+                        <td>${o.paid_at ? formatDate(o.paid_at) : '-'}</td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" onclick="viewOrder('${o.id}')">详情</button>
+                            ${o.status === 0 ? `<button class="btn btn-success btn-sm" onclick="markOrderPaid('${o.id}')">补单</button>` : ''}
+                        </td>
+                    </tr>
+                `).join('');
+            }
+            renderPagination('orders-pagination', ordersTotal, ordersPage, ordersPageSize, 'loadOrders');
+        }
+
+        async function viewOrder(orderId) {
+            if (IS_STATIC_DEMO) { showStaticUnavailable(); return; }
+            try {
+                const res = await fetch(getApiBase() + '/api/admin/orders/' + orderId, {
+                    headers: { 'X-Admin-Token': adminToken }
+                });
+                const data = await res.json();
+                const o = data.order;
+                const r = data.result;
+                let resultHtml = '';
+                if (r) {
+                    resultHtml = `
+                        <h4 style="margin: 16px 0 8px;">关联报告</h4>
+                        <div class="detail-row"><div class="detail-label">报告ID</div><div class="detail-value"><code>${r.id}</code></div></div>
+                        <div class="detail-row"><div class="detail-label">结果类型</div><div class="detail-value">${escapeHtml(r.result_type || '-')}</div></div>
+                        <div class="detail-row"><div class="detail-label">付费状态</div><div class="detail-value">${r.is_paid ? '已付费' : '未付费'}</div></div>
+                    `;
+                }
+                document.getElementById('detail-title').textContent = '订单详情';
+                document.getElementById('detail-content').innerHTML = `
+                    <div class="detail-row"><div class="detail-label">订单号</div><div class="detail-value"><code>${o.id}</code></div></div>
+                    <div class="detail-row"><div class="detail-label">用户</div><div class="detail-value">${escapeHtml(o.nickname || '用户#' + o.user_id)}</div></div>
+                    <div class="detail-row"><div class="detail-label">OpenID</div><div class="detail-value"><code style="font-size: 12px;">${escapeHtml(o.openid || '-')}</code></div></div>
+                    <div class="detail-row"><div class="detail-label">金额</div><div class="detail-value"><span class="text-success">¥${o.amount.toFixed(2)}</span></div></div>
+                    <div class="detail-row"><div class="detail-label">状态</div><div class="detail-value"><span class="status-tag ${statusClass(o.status)}">${statusText(o.status)}</span></div></div>
+                    <div class="detail-row"><div class="detail-label">下单时间</div><div class="detail-value">${formatDate(o.created_at)}</div></div>
+                    <div class="detail-row"><div class="detail-label">支付时间</div><div class="detail-value">${o.paid_at ? formatDate(o.paid_at) : '-'}</div></div>
+                    <div class="detail-row"><div class="detail-label">过期时间</div><div class="detail-value">${formatDate(o.expired_at)}</div></div>
+                    ${resultHtml}
+                `;
+                showModal('detail-modal');
+            } catch (e) {
+                showToast('加载失败');
+            }
+        }
+
+        async function markOrderPaid(orderId) {
+            if (IS_STATIC_DEMO) { showStaticUnavailable(); return; }
+            if (!confirm('确定要将该订单标记为已支付吗？')) return;
+            try {
+                const res = await fetch(getApiBase() + '/api/admin/orders/' + orderId + '/status', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Admin-Token': adminToken },
+                    body: JSON.stringify({ status: 1 })
+                });
+                if (res.ok) { showToast('已补单'); loadOrders(ordersPage); }
+                else showToast('操作失败');
+            } catch (e) {
+                showToast('网络错误');
+            }
+        }
+
+        // ==================== 报告台账 ====================
+        async function loadResults(page) {
+            resultsPage = page;
+            if (IS_STATIC_DEMO) {
+                renderResults({ total: 0, list: [] });
+                showStaticUnavailable();
+                return;
+            }
+            const paid = document.getElementById('result-paid').value;
+            const keyword = document.getElementById('result-keyword').value;
+            try {
+                const res = await fetch(getApiBase() + `/api/admin/results?page=${page}&pageSize=${resultsPageSize}&paid=${paid}&keyword=${encodeURIComponent(keyword)}`, {
+                    headers: { 'X-Admin-Token': adminToken }
+                });
+                if (res.status === 401) { logout(); return; }
+                const data = await res.json();
+                renderResults(data);
+            } catch (e) {
+                showToast('加载失败');
+            }
+        }
+
+        function renderResults(data) {
+            resultsTotal = data.total;
+            const tbody = document.getElementById('results-tbody');
+            if (data.list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-state">暂无报告</td></tr>';
+            } else {
+                tbody.innerHTML = data.list.map(r => `
+                    <tr>
+                        <td><code style="font-size: 12px;">${r.id.substring(0, 12)}...</code></td>
+                        <td>${r.avatar ? `<img src="${escapeHtml(r.avatar)}" class="avatar" onerror="this.style.display='none'">` : ''}${escapeHtml(r.nickname || '用户#' + r.user_id)}</td>
+                        <td>${escapeHtml(r.test_name || '-')}</td>
+                        <td>${escapeHtml(r.result_type || '-')}</td>
+                        <td><span class="status-tag ${r.is_paid ? 'paid' : 'unpaid'}">${r.is_paid ? '已付费' : '未付费'}</span></td>
+                        <td>${formatDate(r.created_at)}</td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" onclick="viewResult('${r.id}')">查看</button>
+                            ${!r.is_paid ? `<button class="btn btn-success btn-sm" onclick="markResultPaid('${r.id}')">补单</button>` : ''}
+                        </td>
+                    </tr>
+                `).join('');
+            }
+            renderPagination('results-pagination', resultsTotal, resultsPage, resultsPageSize, 'loadResults');
+        }
+
+        async function viewResult(resultId) {
+            if (IS_STATIC_DEMO) { showStaticUnavailable(); return; }
+            try {
+                const res = await fetch(getApiBase() + '/api/admin/results/' + resultId, {
+                    headers: { 'X-Admin-Token': adminToken }
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    showToast(data.message || '加载失败');
+                    return;
+                }
+
+                const r = data.result;
+                const sectionsHtml = (r.sections || []).map(section => `
+                    <div class="detail-row">
+                        <div class="detail-label">${escapeHtml(section.title || '-')}</div>
+                        <div class="detail-value">${escapeHtml((section.content || '').replace(/\n+/g, ' ').substring(0, 160))}${(section.content || '').length > 160 ? '...' : ''}</div>
+                    </div>
+                `).join('') || '<div class="text-muted">暂无完整报告内容</div>';
+
+                const ordersHtml = (data.orders || []).map(o => `
+                    <div class="detail-row">
+                        <div class="detail-label">${o.id.substring(0, 16)}...</div>
+                        <div class="detail-value">¥${Number(o.amount).toFixed(2)} · ${statusText(o.status)} · ${formatDate(o.created_at)}</div>
+                    </div>
+                `).join('') || '<div class="text-muted">暂无订单</div>';
+
+                document.getElementById('detail-title').textContent = '报告详情';
+                document.getElementById('detail-content').innerHTML = `
+                    <div class="detail-row"><div class="detail-label">报告ID</div><div class="detail-value"><code>${escapeHtml(r.id)}</code></div></div>
+                    <div class="detail-row"><div class="detail-label">用户</div><div class="detail-value">${r.avatar ? `<img src="${escapeHtml(r.avatar)}" class="avatar" onerror="this.style.display='none'">` : ''}${escapeHtml(r.nickname || '用户#' + r.user_id)}</div></div>
+                    <div class="detail-row"><div class="detail-label">测试</div><div class="detail-value">${escapeHtml(r.test_name || r.test_id || '-')}</div></div>
+                    <div class="detail-row"><div class="detail-label">结果</div><div class="detail-value">${escapeHtml(r.result_type || '-')} · ${escapeHtml(r.result_code || '-')}</div></div>
+                    <div class="detail-row"><div class="detail-label">付费状态</div><div class="detail-value"><span class="status-tag ${r.is_paid ? 'paid' : 'unpaid'}">${r.is_paid ? '已付费' : '未付费'}</span></div></div>
+                    <div class="detail-row"><div class="detail-label">答案</div><div class="detail-value">${escapeHtml((r.answers || []).join(', '))}</div></div>
+                    <div class="detail-row"><div class="detail-label">创建时间</div><div class="detail-value">${formatDate(r.created_at)}</div></div>
+                    <h4 style="margin: 16px 0 8px;">完整报告模块</h4>
+                    ${sectionsHtml}
+                    <h4 style="margin: 16px 0 8px;">关联订单</h4>
+                    ${ordersHtml}
+                `;
+                showModal('detail-modal');
+            } catch (e) {
+                showToast('加载失败');
+            }
+        }
+
+        async function markResultPaid(resultId) {
+            if (IS_STATIC_DEMO) { showStaticUnavailable(); return; }
+            if (!confirm('确定要将该报告标记为已支付吗？')) return;
+            try {
+                const res = await fetch(getApiBase() + '/api/admin/results/' + resultId + '/paid', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Admin-Token': adminToken }
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(data.message || '已补单');
+                    loadResults(resultsPage);
+                } else {
+                    showToast(data.message || '操作失败');
+                }
+            } catch (e) {
+                showToast('操作失败');
+            }
+        }
+
+        // ==================== 分页 ====================
+        function renderPagination(containerId, total, page, pageSize, fnName) {
+            const totalPages = Math.ceil(total / pageSize);
+            if (totalPages <= 1) {
+                document.getElementById(containerId).innerHTML = `<div style="color: #94A3B8; font-size: 12px;">共 ${total} 条</div>`;
+                return;
+            }
+            let html = `<div style="color: #94A3B8; font-size: 12px; margin-right: 12px;">共 ${total} 条</div>`;
+            html += `<button ${page === 1 ? 'disabled' : ''} onclick="${fnName}(${page - 1})">上一页</button>`;
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= page - 2 && i <= page + 2)) {
+                    html += `<button class="${i === page ? 'active' : ''}" onclick="${fnName}(${i})">${i}</button>`;
+                } else if (i === page - 3 || i === page + 3) {
+                    html += `<span style="color: #94A3B8;">...</span>`;
+                }
+            }
+            html += `<button ${page === totalPages ? 'disabled' : ''} onclick="${fnName}(${page + 1})">下一页</button>`;
+            document.getElementById(containerId).innerHTML = html;
+        }
+
+        // ==================== 上传 ====================
+        function setupUpload() {
+            const zone = document.getElementById('upload-zone');
+            const input = document.getElementById('file-input');
+            zone.addEventListener('click', () => input.click());
+            zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragover'); });
+            zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                for (let i = 0; i < files.length; i++) {
+                    handleFile(files[i]);
+                }
+            });
+            input.addEventListener('change', (e) => {
+                const files = e.target.files;
+                for (let i = 0; i < files.length; i++) {
+                    handleFile(files[i]);
+                }
+                e.target.value = '';
+            });
+        }
+
+        async function handleFile(file) {
+            if (IS_STATIC_DEMO) { showStaticUnavailable(); return; }
+            if (!file.name.endsWith('.json')) {
+                showToast('只支持 .json 文件');
+                return;
+            }
+            try {
+                const text = await file.text();
+                const data = JSON.parse(text);
+                if (!data.id || !data.name || !data.questions) {
+                    showToast('JSON 格式错误：缺少 id/name/questions');
+                    return;
+                }
+                const res = await fetch(getApiBase() + '/api/admin/upload-test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Admin-Token': adminToken },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (res.ok) {
+                    showToast('✓ ' + file.name + ' - ' + (result.message || '成功'));
+                    loadTests();
+                } else {
+                    showToast('✗ ' + file.name + ' - ' + (result.message || '失败'));
+                }
+            } catch (e) {
+                showToast('解析失败：' + file.name);
+            }
+        }
+
+        // ==================== 初始化 ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            setupUpload();
+            if (IS_STATIC_DEMO) {
+                if (adminToken) showAdminPage();
+                else showLoginPage();
+                return;
+            }
+            if (adminToken) {
+                fetch(getApiBase() + '/api/admin/dashboard', {
+                    headers: { 'X-Admin-Token': adminToken }
+                }).then(res => {
+                    if (res.ok) showAdminPage();
+                    else logout();
+                }).catch(() => showLoginPage());
+            } else {
+                showLoginPage();
+            }
+        });
+    </script>
+</body>
+</html>
