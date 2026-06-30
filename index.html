@@ -1093,6 +1093,47 @@
                 min-height: 100vh;
                 box-shadow: 0 0 0 1px rgba(207, 223, 237, 0.55), 0 30px 70px rgba(37, 40, 79, 0.08);
             }
+
+            .test-back-btn {
+                position: static;
+                width: 100%;
+                margin-top: 6px;
+                right: auto;
+                transform: none;
+            }
+
+            .test-back-btn:active {
+                transform: scale(0.985);
+            }
+
+            .fixed-pay-bar {
+                width: 430px;
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+            }
+        }
+
+        @media (min-width: 720px) and (max-height: 920px) {
+            .test-content {
+                padding-bottom: 72px;
+            }
+
+            .question-text {
+                font-size: 28px;
+                margin-bottom: 78px;
+            }
+
+            .option-card {
+                min-height: 68px;
+                font-size: 17px;
+                margin-bottom: 12px;
+            }
+
+            .test-back-btn {
+                height: 58px;
+                opacity: 0.94;
+            }
         }
 
         @media (max-width: 374px) {
